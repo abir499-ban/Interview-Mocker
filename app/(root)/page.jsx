@@ -2,6 +2,7 @@
 import {useUser} from '@clerk/nextjs'
 import React, { useEffect } from 'react'
 import Dashboard from '../../components/shared/Dashboard'
+import Image from 'next/image'
 
 const page = () => {
   const signedinState = useUser();
