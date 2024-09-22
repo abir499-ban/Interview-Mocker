@@ -43,9 +43,10 @@ const Dashboard = () => {
 
         try {
             const result = await chatSession.sendMessage(InputPrompt);
-            const MockJSONResponse = (result.response.text()).replace('```json', '').replace('```', '');
+            const MockJSONResponse = (await result.response.text()).replace('```json', '').replace('```', '');
             setJSONresp(JSON.parse(MockJSONResponse));
             console.log(JSONresp);
+            console.log("Size: ", JSONresp.length);
             if (JSONresp) {
                 const resp = await db.insert(MockInterview).values({
                     mockId: uuidv4(),
