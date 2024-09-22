@@ -17,6 +17,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { useUser } from '@clerk/nextjs'
 import moment from 'moment'
 import { MockInterview } from '../../utils/schema'
+import { useRouter } from 'next/navigation'
 
 const Dashboard = () => {
 
@@ -26,8 +27,9 @@ const Dashboard = () => {
     const [jobPosition, setjobPosition] = useState("");
     const [jobExperience, setjobExperience] = useState("");
     const [loading, setloading] = useState(false);
-    const [JSONresp, setJSONresp] = useState([]);
     const { user } = useUser();
+    const router = useRouter();
+
     const handlesubmit = async (event) => {
         setloading(true);
         event.preventDefault();
@@ -43,8 +45,9 @@ const Dashboard = () => {
 
         try {
             const result = await chatSession.sendMessage(InputPrompt);
-            const MockJSONResponse = (await result.response.text()).replace('```json', '').replace('```', '');
-            setJSONresp(JSON.parse(MockJSONResponse));
+            const MockJSONResponse = (result.response.candidates[0].content.parts[0].text).replace('```json', '').replace('```', '').trim();
+            console.log(MockJSONResponse);
+            const JSONresp = await JSON.parse(MockJSONResponse);
             console.log(JSONresp);
             console.log("Size: ", JSONresp.length);
             if (JSONresp) {
@@ -57,12 +60,11 @@ const Dashboard = () => {
                     createdBy: user?.primaryEmailAddress?.emailAddress,
                     createdAt: moment().format('DD-MM-yyyy'),
                 }).returning({ mockId: MockInterview.mockId });
-                console.log("Inserted ID: ", resp);
+                console.log(resp[0].mockId);
+                router.push(`/interview/${resp[0].mockId}`);
             } else {
                 console.log("Error in inserting in Database");
             }
-
-
         } catch (err) {
             console.log('Error in fetching or writing to database: ', err);
         } finally {
