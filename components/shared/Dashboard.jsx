@@ -12,40 +12,64 @@ import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { chatSession, display, sayHi } from '../../utils/Gemini.config'
 import Image from 'next/image'
-
+import { db } from '../../utils/db'
+import { v4 as uuidv4 } from 'uuid'
+import { useUser } from '@clerk/nextjs'
+import moment from 'moment'
+import { MockInterview } from '../../utils/schema'
 
 const Dashboard = () => {
+
+
     const [openDialog, setopenDialog] = useState(false);
     const [jobDescription, setjobDescription] = useState("");
     const [jobPosition, setjobPosition] = useState("");
     const [jobExperience, setjobExperience] = useState("");
     const [loading, setloading] = useState(false);
+    const [JSONresp, setJSONresp] = useState([]);
+    const { user } = useUser();
     const handlesubmit = async (event) => {
-        setloading(true)
+        setloading(true);
         event.preventDefault();
+
         const formData = {
             Exp: jobExperience,
             Desc: jobDescription,
             pos: jobPosition
-        }
+        };
         console.table(formData);
 
-        const InputPrompt = `Job Position : ${jobPosition}, Job Description:${jobDescription}, Job Experience : ${jobExperience} years. Please generate 5 interview questions and answers based on it in JSON format.`
+        const InputPrompt = `Job Position: ${jobPosition}, Job Description: ${jobDescription}, Job Experience: ${jobExperience} years. Please generate 5 interview questions and answers based on it in JSON format.`;
 
         try {
             const result = await chatSession.sendMessage(InputPrompt);
+            const MockJSONResponse = (result.response.text()).replace('```json', '').replace('```', '');
+            setJSONresp(JSON.parse(MockJSONResponse));
+            console.log(JSONresp);
+            if (JSONresp) {
+                const resp = await db.insert(MockInterview).values({
+                    mockId: uuidv4(),
+                    jsonmockResp: JSONresp,
+                    jobPosition: jobPosition,
+                    jobDesc: jobDescription,
+                    jobExp: jobExperience,
+                    createdBy: user?.primaryEmailAddress?.emailAddress,
+                    createdAt: moment().format('DD-MM-yyyy'),
+                }).returning({ mockId: MockInterview.mockId });
+                console.log("Inserted ID: ", resp);
+            } else {
+                console.log("Error in inserting in Database");
+            }
 
-            const output = result.response.candidates[0].content.parts[0].text
-            console.log(output);
+
         } catch (err) {
-            console.log('Error in fetching ', err);
-        }
-        finally {
+            console.log('Error in fetching or writing to database: ', err);
+        } finally {
             setloading(false);
             setopenDialog(false);
-
         }
-    }
+    };
+
     return (
         <>
             {!loading ? (<div>
@@ -83,7 +107,7 @@ const Dashboard = () => {
                         </DialogHeader>
                     </DialogContent>
                 </Dialog></div>) : (
-                <Image src={'/loader.svg'} height='120' width='120' />
+                <Image src={'/loader.svg'} height='120' width='120' alt='loader' />
             )}
 
         </>
