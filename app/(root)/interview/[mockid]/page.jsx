@@ -9,7 +9,7 @@ import { WebcamIcon } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 
 const page = () => {
-    const [InterviewData, setInterviewData] = useState()
+    const [InterviewData, setInterviewData] = useState(null)
     const [enablewebcam, setenablewebcam] = useState(false);
     const { mockid } = useParams();
     useEffect(() => {
@@ -20,7 +20,8 @@ const page = () => {
     const fetchInterviewDetails = async () => {
         const data = await db.select().from(MockInterview).
             where(eq(MockInterview.mockId, mockid));
-        setInterviewData(data[0])
+        console.log(data);
+        setInterviewData(data[0]);
     }
     return (
         <div>
@@ -40,6 +41,17 @@ const page = () => {
                     <Button onClick={() => setenablewebcam(true)}>Enable Webcam and Microphone</Button>
                 </div>
             )}
+
+            <div className='flex flex-wrap justify-center items-center flex-row p-16 gap-2'>
+                {InterviewData ? (
+                    Object.keys(InterviewData).map((key) => (
+                        <h1><strong>{key}</strong> : {InterviewData[key]}</h1>
+                    ))
+                ) : (
+                    <h1>No interview Data</h1>
+                )
+                }
+            </div>
 
         </div>
     )
