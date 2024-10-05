@@ -1,6 +1,8 @@
-import { SignIn } from '@clerk/nextjs'
+"use client";
+import { SignIn, useUser } from '@clerk/nextjs'
 import React from 'react'
 export default function Page() {
+  const isSignedIN = useUser();
   return(
     <section className="bg-white">
   <div className="lg:grid lg:min-h-screen lg:grid-cols-12">
@@ -27,8 +29,11 @@ export default function Page() {
         </a>
 
         
-
+      {isSignedIN.isSignedIn ? (
+        <p>You are already signed in</p>
+      ) : (
         <SignIn/>
+      )}
       </div>
     </main>
   </div>

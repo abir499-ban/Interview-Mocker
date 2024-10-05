@@ -45,15 +45,16 @@ const Dashboard = () => {
 
         try {
             const result = await chatSession.sendMessage(InputPrompt);
-            const MockJSONResponse = (result.response.candidates[0].content.parts[0].text).replace('```json', '').replace('```', '').trim();
-            console.log(MockJSONResponse);
-            const JSONresp = await JSON.parse(MockJSONResponse);
-            console.log(JSONresp);
-            console.log("Size: ", JSONresp.length);
-            if (JSONresp) {
+            // const MockJSONResponse = (result.response.candidates[0].content.parts[0].text).replace('```json', '').replace('```', '').trim();
+            // console.log(MockJSONResponse);
+            // const JSONresp = await JSON.parse(MockJSONResponse);
+            const MockJSONResp = (result.response.text()).replace('```json', '').replace('```','')
+            console.log(JSON.parse(MockJSONResp));
+            const QAarray = JSON.parse(MockJSONResp);
+            if (QAarray.length > 0) {
                 const resp = await db.insert(MockInterview).values({
                     mockId: uuidv4(),
-                    jsonmockResp: JSONresp,
+                    jsonmockResp: JSON.parse(MockJSONResp),
                     jobPosition: jobPosition,
                     jobDesc: jobDescription,
                     jobExp: jobExperience,
