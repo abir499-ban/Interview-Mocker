@@ -4,6 +4,8 @@ import React, { useState } from 'react'
 import Webcam from 'react-webcam';
 import { WebcamIcon, ChevronRight, Mic } from 'lucide-react';
 import { Button, buttonVariants } from '../ui/button'
+import { Toaster } from "../ui/sonner"
+import { toast } from "sonner"
 const RecordAnwer = () => {
     const {
         error,
@@ -18,13 +20,23 @@ const RecordAnwer = () => {
     });
 
     const [webcam, setwebcam] = useState(false);
-    const [mircophone, setmircophone] = useState(false);
+    const [answersaved, setanswersaved] = useState(false);
     const [useranswer, setuseranswer] = useState("")
 
-    const saveTranscript=()=>{
-            const convertedData = results.map((result)=> result.transcript).join(' ')
-            console.log(convertedData);
-            setuseranswer(convertedData)
+    const saveTranscript = () => {
+        const convertedData = results.map((result) => result.transcript).join(' ')
+        console.log(convertedData);
+        setuseranswer(convertedData);
+        setanswersaved(true);
+        toast("Recorded answer has been saved")
+    }
+
+    const verfiyAnswer = async()=>{
+        if(useranswer.length < 10){
+            toast("Transcript is too short to be recorded")
+            return;
+        }
+        toast("verified");
     }
     return (
         <>
@@ -46,7 +58,7 @@ const RecordAnwer = () => {
                     )}
                 </div >
                 <div className='flex flex-wrap flex-row justify-center items-center m-12'>
-                    <div><Mic color="#ea4d4d" size='250px'/></div>
+                    <div><Mic color="#ea4d4d" size='250px' /></div>
                     <div>Recording : {isRecording.toString()}</div>
                     <Button variant='outline' onClick={isRecording ? stopSpeechToText : startSpeechToText}>
                         {isRecording ? 'Stop Recording' : 'Start Recording'}
@@ -59,8 +71,13 @@ const RecordAnwer = () => {
                     </ul>
                 </div>
                 <div className='flex flex-wrap flex-row justify-center items-center m-12'>
-                    {isRecording && <Button onClick={()=>saveTranscript()}>Save Transcript</Button>}
-                </div></div>
+                    {isRecording && <Button onClick={() => saveTranscript()}>Save Transcript</Button>}
+                </div>
+                {answersaved && (
+                    <Button onClick={()=>verfiyAnswer()}>Verify Answer</Button>
+                )}
+            </div>
+            <Toaster />
         </>
     )
 }
